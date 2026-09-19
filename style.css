@@ -446,14 +446,3 @@ body.theater .party-panel { opacity: 1; }
   .now-actions .btn { flex: 1 1 calc(50% - 4px); }
   .pp-log { height: 200px; }
 }
-
-.mic-btn { color: var(--muted); }
-.mic-btn.is-recording {
-  color: #fff; background: var(--danger);
-  animation: mic-pulse 1.1s ease-in-out infinite;
-}
-@keyframes mic-pulse { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--danger) 30%, transparent); } }
-.pp-voice-row { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
-.pp-voice-row audio { height: 32px; max-width: 220px; }
-.pp-voice-dur { font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
-

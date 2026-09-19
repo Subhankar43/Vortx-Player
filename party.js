@@ -197,7 +197,6 @@
       addMsg(me.name, text, true);
       send({ type: 'chat', name: me.name, text });
     });
-    document.dispatchEvent(new CustomEvent('vx:party-ready', { detail: ui }));
   }
 
   function setConnected(on) {
@@ -342,13 +341,6 @@
         const name = fromGuest ? nameOf(fromGuest.peer) : cleanName(m.name);
         addMsg(name, text, false);
         if (fromGuest) send({ type: 'chat', name, text }, fromGuest.peer);
-        break;
-      }
-       case 'voice': {
-        if (typeof m.data !== 'string' || !m.data.startsWith('data:audio/')) return;
-        const name = fromGuest ? nameOf(fromGuest.peer) : cleanName(m.name);
-        document.dispatchEvent(new CustomEvent('vx:voice', { detail: { name, data: m.data, dur: m.dur } }));
-        if (fromGuest) send({ type: 'voice', name, data: m.data, dur: m.dur }, fromGuest.peer);
         break;
       }
       default:
@@ -637,10 +629,9 @@
     sharedUrl = '';
     pendingSync = null;
     wantPlaying = false;
-        if (ui) { ui.panel.remove(); ui = null; }
+    if (ui) { ui.panel.remove(); ui = null; }
     document.body.classList.remove('party-on');
     btn.setAttribute('aria-pressed', 'false');
-    document.dispatchEvent(new CustomEvent('vx:party-closed'));
   }
 
   function leave(message) {
@@ -654,11 +645,4 @@
   /* ---------- Invite link ---------- */
   const invited = String((VX.initialParams && VX.initialParams.get('party')) || '').toUpperCase();
   if (CODE_RE.test(invited)) openDialog('join', invited);
-
-  /* ---------- Hooks for voice.js ---------- */
-  VX.party = {
-    isActive: () => !!role,
-    send: (msg, exceptId) => send(msg, exceptId),
-    me: () => me,
-  };
 })();
