@@ -262,6 +262,7 @@ player.on('error', fail);
     updateNow();
     addRecent(current);
     history.replaceState(null, '', shareLink(current).replace(location.origin, ''));
+    document.dispatchEvent(new CustomEvent('vx:loaded', { detail: current }));
   }
 
   function updateNow() {
@@ -387,9 +388,20 @@ player.on('error', fail);
 
   el.clearRecent.addEventListener('click', () => { store.set('vx-recent', []); renderRecents(); });
 
+  /* ---------- Public API for feature modules (notes.js, party.js) ---------- */
+  const params = new URLSearchParams(location.search);
+
+  window.VX = {
+    make, toast, icon, fmtTime, store, copy,
+    player: () => player,
+    current: () => current,
+    load: (url, sub, autostart = true) => start(url, sub || '', { autostart }),
+    initialParams: params,
+  };
+
   /* ---------- Boot ---------- */
   renderRecents();
-  const params = new URLSearchParams(location.search);
+  
   const shared = parseUrl(params.get('url'));
   if (shared) {
     el.url.value = shared.href;

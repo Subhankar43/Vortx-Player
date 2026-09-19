@@ -8,6 +8,7 @@
   <meta name="theme-color" content="#0a0f1f">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://content.jwplatform.com" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <link rel="stylesheet" href="style.css">
   <script>
     /* Apply the saved theme before first paint to avoid a flash. */
@@ -146,8 +147,13 @@
     <symbol id="i-captions" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M8 11h2M14 11h2M8 15h5"/></symbol>
   </svg>
 
-  <!-- JW Player cloud library (v8). Loaded before app.js; order is preserved with defer. -->
+    <!-- JW Player cloud library (v8). Loaded before app.js; order is preserved with defer. -->
   <script src="https://content.jwplatform.com/libraries/IDzF9Zmk.js" defer></script>
   <script src="app.js" defer></script>
+
+  <!-- PeerJS: browser-to-browser connections for the watch party. -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js" defer></script>
+  <script src="notes.js" defer></script>
+  <script src="party.js" defer></script>
 </body>
 </html>
