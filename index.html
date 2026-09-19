@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="glass">
+<head>
+  <meta charset="utf-8">
+  <title>Vortx Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Paste a video link and watch it instantly. HLS, DASH, MP4 and WebM, in Glass or Cinema mode.">
+  <meta name="theme-color" content="#0a0f1f">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://content.jwplatform.com" crossorigin>
+  <link rel="stylesheet" href="style.css">
+  <script>
+    /* Apply the saved theme before first paint to avoid a flash. */
+    try {
+      var t = JSON.parse(localStorage.getItem('vx-theme'));
+      if (t === 'glass' || t === 'cinema') document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"><i></i><i></i><i></i></div>
+
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Vortx Player home">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <defs>
+          <linearGradient id="bm" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="var(--accent)"/>
+            <stop offset="1" stop-color="var(--accent-2)"/>
+          </linearGradient>
+        </defs>
+        <rect width="32" height="32" rx="9" fill="url(#bm)"/>
+        <path d="M12.5 9.5v13l10-6.5z" fill="#fff"/>
+      </svg>
+      <span class="brand-name">Vortx <span>Player</span></span>
+    </a>
+
+    <div class="seg" role="radiogroup" aria-label="Appearance">
+      <span class="seg-thumb" aria-hidden="true"></span>
+      <button type="button" role="radio" data-theme-choice="glass" aria-checked="true">
+        <svg class="i"><use href="#i-sparkle"/></svg><span>Glass</span>
+      </button>
+      <button type="button" role="radio" data-theme-choice="cinema" aria-checked="false">
+        <svg class="i"><use href="#i-film"/></svg><span>Cinema</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="hero dimmable">
+      <h1>Paste a link. Press play.</h1>
+      <p>Stream HLS, DASH, MP4 and WebM links right in your browser. Nothing is uploaded and nothing is stored on a server.</p>
+    </section>
+
+    <form id="playForm" class="panel command dimmable" novalidate>
+      <div class="command-row">
+        <div class="field">
+          <svg class="i field-icon"><use href="#i-link"/></svg>
+          <label for="videoUrl" class="sr-only">Video link</label>
+          <input id="videoUrl" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://example.com/video.mp4 or .m3u8">
+          <span id="typeBadge" class="badge" hidden></span>
+          <button type="button" id="clearBtn" class="icon-btn" aria-label="Clear link" hidden><svg class="i"><use href="#i-x"/></svg></button>
+          <button type="button" id="pasteBtn" class="icon-btn" aria-label="Paste from clipboard"><svg class="i"><use href="#i-clipboard"/></svg></button>
+        </div>
+        <button type="submit" id="playBtn" class="btn-primary"><svg class="i"><use href="#i-play"/></svg>Play</button>
+      </div>
+
+      <details class="options">
+        <summary><svg class="i"><use href="#i-captions"/></svg>Add subtitles</summary>
+        <div class="field field-sub">
+          <label for="subUrl" class="sr-only">Subtitle link</label>
+          <input id="subUrl" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://example.com/subtitles.vtt">
+        </div>
+      </details>
+
+      <p id="formMsg" class="form-msg" role="status" aria-live="polite"></p>
+    </form>
+
+    <section class="stage-wrap" aria-label="Video player">
+      <div id="stage" class="stage">
+        <div id="player"></div>
+
+        <div id="placeholder" class="stage-overlay">
+          <div class="ph-icon"><svg class="i"><use href="#i-play"/></svg></div>
+          <h2>Your video shows up here</h2>
+          <p>Paste a link above, or open a link someone shared with you.</p>
+          <button type="button" id="sampleBtn" class="btn">Try a sample stream</button>
+        </div>
+
+        <div id="stageError" class="stage-overlay stage-error" hidden>
+          <div class="ph-icon"><svg class="i"><use href="#i-alert"/></svg></div>
+          <h2>This video can't be played</h2>
+          <p id="stageErrorText"></p>
+          <button type="button" id="retryBtn" class="btn">Try again</button>
+        </div>
+      </div>
+
+      <div class="now">
+        <div class="now-info">
+          <strong id="nowTitle">Nothing playing</strong>
+          <span id="nowMeta">Paste a link to get started</span>
+        </div>
+        <div class="now-actions">
+          <button type="button" id="shareBtn" class="btn" disabled><svg class="i"><use href="#i-share"/></svg><span>Share</span></button>
+          <button type="button" id="downloadBtn" class="btn" disabled><svg class="i"><use href="#i-download"/></svg><span>Download</span></button>
+          <button type="button" id="theaterBtn" class="btn" aria-pressed="false" title="Theater mode (T)"><svg class="i"><use href="#i-theater"/></svg><span>Theater</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section id="recents" class="panel recents dimmable" aria-labelledby="recentsTitle">
+      <div class="recents-head">
+        <h2 id="recentsTitle"><svg class="i"><use href="#i-clock"/></svg>Recently played</h2>
+        <button type="button" id="clearRecent" class="link-btn" hidden>Clear all</button>
+      </div>
+      <ul id="recentList" class="recent-list"></ul>
+      <p id="recentEmpty" class="empty">Links you play are saved here, on this device only.</p>
+    </section>
+  </main>
+
+  <footer class="footer dimmable">
+    <p>Made with ❤️ by 
+      <a href="https://www.instagram.com/vortx_43" target="_blank" rel="noopener">Vortx</a></p>
+    <p class="footer-meta">
+      <a href="https://github.com/Subhankar43/Vortx-Player" target="_blank" rel="noopener">Source on GitHub</a>
+      <span aria-hidden="true">/</span>
+      <span>Press <kbd>/</kbd> to paste a link, <kbd>T</kbd> for theater</span>
+    </p>
+  </footer>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></symbol>
+    <symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="M16 6l-4-4-4 4M12 2v14"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></symbol>
+    <symbol id="i-theater" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16v4M17 18h4"/></symbol>
+    <symbol id="i-film" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 3v18M17 3v18M3 8h4M3 12h4M3 16h4M17 8h4M17 12h4M17 16h4"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></symbol>
+    <symbol id="i-captions" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M8 11h2M14 11h2M8 15h5"/></symbol>
+  </svg>
+
+  <!-- JW Player cloud library (v8). Loaded before app.js; order is preserved with defer. -->
+  <script src="https://content.jwplatform.com/libraries/IDzF9Zmk.js" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
