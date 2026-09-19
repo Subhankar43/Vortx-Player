@@ -257,7 +257,10 @@ player.on('error', fail);
       lastSaved = e.position;
       resume.save(current.url, e.position, e.duration);
     });
-    player.on('complete', () => resume.clear(current.url));
+        player.on('complete', () => {
+      resume.clear(current.url);
+      document.dispatchEvent(new CustomEvent('vx:complete', { detail: current }));
+    });
 
     updateNow();
     addRecent(current);
@@ -401,7 +404,7 @@ player.on('error', fail);
 
   /* ---------- Boot ---------- */
   renderRecents();
-  
+
   const shared = parseUrl(params.get('url'));
   if (shared) {
     el.url.value = shared.href;

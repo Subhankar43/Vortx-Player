@@ -155,6 +155,62 @@
   });
 
   /* ---------- Panel ---------- */
+    const EMOJI_CATS = [
+    { icon: '😀', name: 'Smileys', list: ['😀','😁','😂','🤣','😃','😄','😅','😆','😉','😊','😋','😎','😍','🥰','😘','😗','😙','😚','🙂','🤗','🤩','🤔','🤨','😐','😑','😶','🙄','😏','😣','😥','😮','🤐','😯','😪','😫','🥱','😴','😌','😛','😜','😝','🤤','😒','😓','😔','😕','🙃','🤑','😲','☹️','🙁','😖','😞','😟','😤','😢','😭','😦','😧','😨','😩','🤯','😬','😰','😱','🥵','🥶','😳','🤪','😵','😡','😠','🤬','😷','🤒','🤕','🤢','🤮','🥳','🥺','🤡','🤫','🤭','🧐','🤓'] },
+    { icon: '👍', name: 'Gestures', list: ['👍','👎','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','☝️','👋','🤚','🖐️','✋','🖖','👏','🙌','🤝','🙏','✍️','💪','🦾','🫰','🤳'] },
+    { icon: '❤️', name: 'Hearts', list: ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟','😻','💌'] },
+    { icon: '🐶', name: 'Animals', list: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐢','🐍','🐙','🦈','🐬','🐳','🐘','🦒','🐫','🐄'] },
+    { icon: '🍕', name: 'Food', list: ['🍏','🍎','🍌','🍉','🍇','🍓','🍒','🍑','🥭','🍍','🥥','🍅','🍆','🥑','🥦','🌽','🍞','🥐','🧀','🍳','🥓','🍔','🍟','🍕','🌭','🌮','🌯','🍿','🍩','🍪','🎂','🍰','🍫','🍬','🍭','☕','🍵','🥤','🧋','🍺','🍷','🥂'] },
+    { icon: '⚽', name: 'Activities', list: ['⚽','🏀','🏈','⚾','🎾','🏐','🏉','🎱','🏓','🏸','🥊','🎮','🎲','🎯','🎬','🎤','🎧','🎼','🎹','🥁','🎷','🎸','🎨','🍿','🏆','🥇','🎉','🎊','🎈','🎆'] },
+    { icon: '🚗', name: 'Travel', list: ['🚗','🚕','🚙','🚌','🏎️','🚓','🚑','🚒','🚲','✈️','🚀','🚢','⛵','🚂','🏠','🏢','⛰️','🏖️','🏝️','🌋','🗽','🎡','🎢','🌙','⭐','☀️','⛅','🌈','🔥','💧'] },
+    { icon: '💯', name: 'Symbols', list: ['💯','✅','❌','❗','❓','💤','💢','💥','💫','⭐','✨','🔥','💦','💨','🕐','🔞','♻️','🔁','▶️','⏸️','⏭️','🔊','🔇','📢','💬','🗯️','💡','🎵','🎶'] },
+  ];
+
+  function setupEmoji() {
+    const tabs = make('div', 'pp-emoji-tabs');
+    const grid = make('div', 'pp-emoji-grid');
+    ui.emojiPanel.replaceChildren(tabs, grid);
+
+    function showCat(cat) {
+      grid.replaceChildren();
+      cat.list.forEach((em) => {
+        const b = make('button', 'pp-emoji', em);
+        b.type = 'button';
+        b.addEventListener('click', () => { ui.input.value += em; ui.input.focus(); });
+        grid.appendChild(b);
+      });
+      grid.scrollTop = 0;
+    }
+
+    EMOJI_CATS.forEach((cat, i) => {
+      const t = make('button', 'pp-emoji-tab', cat.icon);
+      t.type = 'button';
+      t.title = cat.name;
+      t.addEventListener('click', () => {
+        tabs.querySelectorAll('.pp-emoji-tab').forEach((x) => x.classList.remove('is-active'));
+        t.classList.add('is-active');
+        showCat(cat);
+      });
+      if (i === 0) t.classList.add('is-active');
+      tabs.appendChild(t);
+    });
+    showCat(EMOJI_CATS[0]);
+
+    ui.emojiBtn.addEventListener('click', () => {
+      const open = ui.emojiPanel.hidden;
+      ui.emojiPanel.hidden = !open;
+      ui.emojiBtn.setAttribute('aria-expanded', String(open));
+    });
+
+    // Click anywhere outside the panel/button closes it.
+    document.addEventListener('click', (e) => {
+      if (ui.emojiPanel.hidden) return;
+      if (ui.emojiWrap.contains(e.target) || ui.emojiBtn.contains(e.target)) return;
+      ui.emojiPanel.hidden = true;
+      ui.emojiBtn.setAttribute('aria-expanded', 'false');
+    });
+  }
+
   function buildPanel() {
     const panel = make('aside', 'panel party-panel');
     panel.setAttribute('aria-label', 'Watch party');
@@ -170,18 +226,25 @@
         <div class="pp-people" id="ppPeople"></div>
         <div class="pp-log" id="ppLog" role="log" aria-live="polite"></div>
         <p class="pp-status" id="ppStatus" hidden></p>
+            <div class="pp-emoji-wrap" id="ppEmojiWrap">
+          <div class="pp-emoji-panel" id="ppEmojiPanel" hidden></div>
+        </div>
         <form class="pp-form" id="ppForm" autocomplete="off">
           <label class="sr-only" for="ppInput">Message</label>
           <input id="ppInput" type="text" maxlength="500" placeholder="Message everyone" disabled>
+          <button type="button" class="icon-btn" id="ppEmojiBtn" aria-label="Insert emoji" aria-expanded="false">🙂</button>
           <button type="submit" class="btn-primary" id="ppSend" aria-label="Send message" disabled><svg class="i"><use href="#i-send"/></svg></button>
-        </form>
+        </form>   
       </div>`;
     $('.stage-wrap').appendChild(panel);
-    ui = {
+        ui = {
       panel, code: $('#ppCode', panel), people: $('#ppPeople', panel), log: $('#ppLog', panel),
       status: $('#ppStatus', panel), form: $('#ppForm', panel), input: $('#ppInput', panel),
       send: $('#ppSend', panel), invite: $('#ppInvite', panel), leave: $('#ppLeave', panel),
+      emojiBtn: $('#ppEmojiBtn', panel), emojiPanel: $('#ppEmojiPanel', panel), emojiWrap: $('#ppEmojiWrap', panel),
     };
+    setupEmoji();
+
     document.body.classList.add('party-on');
     btn.setAttribute('aria-pressed', 'true');
 
